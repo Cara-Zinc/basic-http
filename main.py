@@ -1,4 +1,6 @@
 # 这是一个示例 Python 脚本。
+import argparse
+
 
 # 按 Shift+F10 执行或将其替换为您的代码。
 # 按 双击 Shift 在所有地方搜索类、文件、工具窗口、操作和设置。
@@ -9,8 +11,17 @@ def print_hi(name):
     print(f'Hi, {name}')  # 按 Ctrl+F8 切换断点。
 
 
+def parse_arg():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--host', '--inbound', '-i', default='0.0.0.0', help='inbound ip address')
+    parser.add_argument('--port', '-p', type=int, default=8080, help='inbound port')
+    return parser.parse_args()
+
 # 按装订区域中的绿色按钮以运行脚本。
 if __name__ == '__main__':
     print_hi('PyCharm')
+
+    args = parse_arg()
+    print(f'Will be litening on {args.host}:{args.port}')
 
 # 访问 https://www.jetbrains.com/help/pycharm/ 获取 PyCharm 帮助
