@@ -22,6 +22,6 @@ if __name__ == '__main__':
     print_hi('PyCharm')
 
     args = parse_arg()
-    print(f'Will be litening on {args.host}:{args.port}')
+    print(f'Will be listening on {args.host}:{args.port}')
 
 # 访问 https://www.jetbrains.com/help/pycharm/ 获取 PyCharm 帮助
