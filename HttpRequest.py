@@ -1,8 +1,16 @@
 import io
+import json
 import logging
-import typing
+from enum import Enum, unique, auto
 
-from HttpTransaction import HttpTransaction
+from HttpTransaction import *
+
+
+@unique
+class HttpMethod(Enum):
+    GET = auto()
+    POST = auto()
+    HEAD = auto()
 
 
 class HttpRequest(HttpTransaction):
@@ -23,9 +31,9 @@ class HttpRequest(HttpTransaction):
                         sin.close()
                         return
 
-                method, path, version = line.split(' ')
-                request._method = method.upper()
-                request._path = path.removeprefix('/').split('/')
+                method, _path, version = line.split(' ')
+                request._method = HttpMethod[method.upper()]
+                request._path = path(_path)
                 request._version = version
 
                 while True:
@@ -36,8 +44,14 @@ class HttpRequest(HttpTransaction):
                     key, value = header.split(': ')
                     request._headers[key] = value.strip()
 
-                request._body_length = int(request._headers.get('Content-Length', 0))
-                request._body = sin.read(request._body_length).decode('utf-8')
+                request._raw_body = sin.read(int(request._headers.get('Content-Length', 0)))
+                body_type = request._headers.get('Content-Type', 'text/plain')
+                if body_type == 'text/plain':
+                    request._body = request._raw_body.decode('utf-8')
+                elif body_type == 'application/json':
+                    request._body = json.loads(request._raw_body.decode('utf-8'))
+                else:
+                    request._body = request._raw_body
 
                 yield request
             except Exception as e:
@@ -48,7 +62,7 @@ class HttpRequest(HttpTransaction):
 
     def __init__(self):
         super().__init__()
-        self._method: typing.Literal['GET', 'POST', 'HEAD'] = 'GET'
+        self._method: HttpMethod = HttpMethod.GET
         self._path = tuple()
 
         self._headers['Connection'] = 'keep-alive'

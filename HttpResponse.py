@@ -19,6 +19,7 @@ class HttpStatus(Enum):
     METHOD_NOT_ALLOWED = 405, 'Method Not Allowed'
     RANGE_NOT_SATISFIABLE = 416, 'Range Not Satisfiable'
 
+    INTERNAL_SERVER_ERROR = 500, 'Internal Server Error'
     BAD_GATEWAY = 502, 'Bad Gateway'
     SERVICE_UNAVAILABLE = 503, 'Service Unavailable'
 
@@ -33,7 +34,6 @@ class HttpResponse(HttpTransaction):
     def __init__(self):
         super().__init__()
         self.code = HttpStatus.OK
-        self._headers['Content-Type'] = 'text/plain'
         self._headers['Connection'] = 'keep-alive'
 
     @property
@@ -52,13 +52,13 @@ class HttpResponse(HttpTransaction):
             self._body = json.dumps(value).encode('utf-8')
             self._headers['Content-Type'] = 'application/json'
 
+        self.headers['Content-Length'] = len(self._body)
+
     @property
     def headers(self):
         return self._headers
 
     def send(self, sout: io.BufferedWriter):
-        self.headers['Content-Length'] = len(self._body)
-
         lines = [f'{self._version} {self.code.code} {self.code.message}'.encode('utf-8')]
         for key, value in self._headers.items():
             lines.append(f'{key}: {value}'.encode('utf-8'))
