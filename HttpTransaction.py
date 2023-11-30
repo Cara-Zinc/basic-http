@@ -1,8 +1,8 @@
 def path(_path: str) -> list[str]:
     return _path.removeprefix('/').split('/')
 
-class HttpTransaction:
 
+class HttpTransaction:
     def __init__(self):
         self._version: str = 'HTTP/1.1'
         self._headers: dict = {}

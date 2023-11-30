@@ -30,7 +30,6 @@ class HttpStatus(Enum):
 
 
 class HttpResponse(HttpTransaction):
-
     def __init__(self):
         super().__init__()
         self.code = HttpStatus.OK

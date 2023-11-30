@@ -9,7 +9,6 @@ from HttpTransaction import path
 
 
 class HttpServer:
-
     def __init__(self):
         self._server_socket: socket.socket = socket.socket(type=socket.SOCK_STREAM)
         self._routing: dict = {
