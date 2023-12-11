@@ -22,6 +22,10 @@ class HttpServer:
                 for request in HttpRequest.receive_requests(sin):
                     logging.debug(request)
                     response = HttpResponse()
+
+                    if request.headers['Connection'] == 'close':
+                        response.headers['Connection'] = 'close'
+
                     route = self.get_route(request.path, request.method)
                     handler = route['handler'] if route else self._default_handler
                     try:
@@ -29,6 +33,7 @@ class HttpServer:
                     except:
                         response = HttpResponse()
                         self._error_handler(request, response)
+
                     response.send(sout)
         finally:
             s.close()

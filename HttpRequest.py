@@ -31,10 +31,15 @@ class HttpRequest(HttpTransaction):
                         sin.close()
                         return
 
-                method, _path, version = line.split(' ')
+                method, query, version = line.split(' ')
+                _path, param = query.split('?') if '?' in query else (query, '')
                 request._method = HttpMethod[method.upper()]
                 request._path = path(_path)
                 request._version = version
+
+                for p in param.split('&'):
+                    key, value = p.split('=')
+                    request._parameter[key] = value
 
                 while True:
                     header = sin.readline().decode('utf-8').strip()
@@ -64,6 +69,7 @@ class HttpRequest(HttpTransaction):
         super().__init__()
         self._method: HttpMethod = HttpMethod.GET
         self._path = tuple()
+        self._parameter = {}
 
         self._headers['Connection'] = 'keep-alive'
 
