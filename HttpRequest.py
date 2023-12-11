@@ -47,7 +47,14 @@ class HttpRequest(HttpTransaction):
                         break
 
                     key, value = header.split(': ')
-                    request._headers[key] = value.strip()
+                    key = key.strip()
+                    value = value.strip()
+                    request._headers[key] = value
+
+                    if key == 'Cookie':
+                        for cookie in value.split('; '):
+                            key, value = cookie.split('=')
+                            request._cookies[key] = value
 
                 request._raw_body = sin.read(int(request._headers.get('Content-Length', 0)))
                 body_type = request._headers.get('Content-Type', 'text/plain')
@@ -70,6 +77,7 @@ class HttpRequest(HttpTransaction):
         self._method: HttpMethod = HttpMethod.GET
         self._path = tuple()
         self._parameter = {}
+        self._cookies = {}
 
         self._headers['Connection'] = 'keep-alive'
 
@@ -80,3 +88,11 @@ class HttpRequest(HttpTransaction):
     @property
     def path(self):
         return self._path
+
+    @property
+    def parameter(self):
+        return self._parameter.copy()
+
+    @property
+    def cookies(self):
+        return self._cookies.copy()
