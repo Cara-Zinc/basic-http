@@ -1,8 +1,8 @@
 import io
 import json
+from datetime import datetime, timezone
 from enum import Enum, unique
 from typing import Literal
-from datetime import datetime, timezone
 
 from HttpTransaction import HttpTransaction
 
