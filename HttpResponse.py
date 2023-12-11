@@ -108,7 +108,7 @@ class HttpResponse(HttpTransaction):
     def headers(self):
         return self._headers
 
-    def cookie(self, cookie: Cookie):
+    def set_cookie(self, cookie: Cookie):
         self._cookies[cookie.key] = cookie
 
     def send(self, sout: io.BufferedWriter):

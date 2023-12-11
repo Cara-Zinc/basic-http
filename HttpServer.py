@@ -85,10 +85,10 @@ class HttpServer:
 
         return route_path[method]
 
-    def default_handler(self, handler: Callable[[HttpRequest, HttpResponse], None]):
+    def set_default_handler(self, handler: Callable[[HttpRequest, HttpResponse], None]):
         self._default_handler = handler
 
-    def error_handler(self, handler: Callable[[HttpRequest, HttpResponse], None]):
+    def set_error_handler(self, handler: Callable[[HttpRequest, HttpResponse], None]):
         self._error_handler = handler
 
     @staticmethod
