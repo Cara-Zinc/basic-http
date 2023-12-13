@@ -57,7 +57,7 @@ class HttpServer:
         if isinstance(_path, list):
             _path = tuple(_path)
 
-        route_path = self._routing.get(_path, {})
+        route_path = self._routing.setdefault(_path, {})
         route_path[method] = {'handler': handler}
 
     def get(self, _path: str | list[str] | tuple[str], handler: Callable[[HttpRequest, HttpResponse], None]):

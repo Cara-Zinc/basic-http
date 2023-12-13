@@ -37,9 +37,10 @@ class HttpRequest(HttpTransaction):
                 request._path = path(_path)
                 request._version = version
 
-                for p in param.split('&'):
-                    key, value = p.split('=')
-                    request._parameter[key] = value
+                if param:
+                    for p in param.split('&'):
+                        key, value = p.split('=') if '=' in p else (p, '')
+                        request._parameter[key] = value
 
                 while True:
                     header = sin.readline().decode('utf-8').strip()
