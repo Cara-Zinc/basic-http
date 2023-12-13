@@ -11,27 +11,29 @@ from HttpTransaction import path
 class HttpServer:
     def __init__(self):
         self._server_socket: socket.socket = socket.socket(type=socket.SOCK_STREAM)
-        self._routing: dict = {
-            ('',): {
-                HttpMethod.GET: {
-                    'handler': HttpServer.welcome_handler
-                }
-            }
-        }
-    # called by listeners to invoke the corresponding handler
+        self._default_handler = HttpServer.default_handler
+        self._error_handler = HttpServer.error_handler
+        self._routing: dict = {}
+        self.get('/', HttpServer.welcome_handler)
+
     def __handler(self, s: socket.socket, addr: str):
         try:
             with s.makefile('rb', encoding='utf-8') as sin, s.makefile('wb', encoding='utf-8') as sout:
                 for request in HttpRequest.receive_requests(sin):
                     logging.debug(request)
                     response = HttpResponse()
+
+                    if request.headers['Connection'] == 'close':
+                        response.headers['Connection'] = 'close'
+
                     route = self.get_route(request.path, request.method)
-                    handler = route['handler'] if route else HttpServer.default_handler
+                    handler = route['handler'] if route else self._default_handler
                     try:
                         handler(request, response)
                     except:
                         response = HttpResponse()
-                        HttpServer.error_handler(request, response)
+                        self._error_handler(request, response)
+
                     response.send(sout)
         finally:
             s.close()
@@ -83,8 +85,13 @@ class HttpServer:
             return None
 
         return route_path[method]
-    
-    # TODO more implementation of handlers are required 
+
+    def set_default_handler(self, handler: Callable[[HttpRequest, HttpResponse], None]):
+        self._default_handler = handler
+
+    def set_error_handler(self, handler: Callable[[HttpRequest, HttpResponse], None]):
+        self._error_handler = handler
+
     @staticmethod
     def welcome_handler(request: HttpRequest, response: HttpResponse):
         response.body = '''
