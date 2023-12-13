@@ -37,7 +37,7 @@ class HttpServer:
                     response.send(sout)
         finally:
             s.close()
-
+    # listener of the http messages, supporting multi-clients
     def listen(self, host: str, port: int):
         self._server_socket.bind((host, port))
         self._server_socket.listen()
@@ -68,7 +68,8 @@ class HttpServer:
 
     def head(self, _path: str | list[str] | tuple[str], handler: Callable[[HttpRequest, HttpResponse], None]):
         self.route(_path, HttpMethod.HEAD, handler)
-
+    
+    # Checking the '_route' dictionary to get corresponding handler. That is, checking for path first, then checking the method name
     def get_route(self, _path: str | list[str] | tuple[str], method: HttpMethod):
         if isinstance(_path, str):
             _path = path(_path)
