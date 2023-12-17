@@ -1,6 +1,8 @@
 import logging
 import socket
 import threading
+import os
+import mimetypes
 from typing import Callable
 
 from HttpRequest import HttpRequest, HttpMethod
@@ -14,20 +16,22 @@ class HttpServer:
         self._default_handler = HttpServer.default_handler
         self._error_handler = HttpServer.error_handler
         self._routing: dict = {}
-        self.get('/', HttpServer.welcome_handler)
+        self.get("/", HttpServer.welcome_handler)
 
     def __handler(self, s: socket.socket, addr: str):
         try:
-            with s.makefile('rb', encoding='utf-8') as sin, s.makefile('wb', encoding='utf-8') as sout:
+            with s.makefile("rb", encoding="utf-8") as sin, s.makefile(
+                "wb", encoding="utf-8"
+            ) as sout:
                 for request in HttpRequest.receive_requests(sin):
                     logging.debug(request)
                     response = HttpResponse()
 
-                    if request.headers['Connection'] == 'close':
-                        response.headers['Connection'] = 'close'
+                    if request.headers["Connection"] == "close":
+                        response.headers["Connection"] = "close"
 
                     route = self.get_route(request.path, request.method)
-                    handler = route['handler'] if route else self._default_handler
+                    handler = route["handler"] if route else self._default_handler
                     try:
                         handler(request, response)
                     except:
@@ -51,23 +55,39 @@ class HttpServer:
         finally:
             self._server_socket.close()
 
-    def route(self, _path: str | list[str] | tuple[str], method: HttpMethod,
-              handler: Callable[[HttpRequest, HttpResponse], None]):
+    def route(
+        self,
+        _path: str | list[str] | tuple[str],
+        method: HttpMethod,
+        handler: Callable[[HttpRequest, HttpResponse], None],
+    ):
         if isinstance(_path, str):
             _path = path(_path)
         if isinstance(_path, list):
             _path = tuple(_path)
 
         route_path = self._routing.setdefault(_path, {})
-        route_path[method] = {'handler': handler}
+        route_path[method] = {"handler": handler}
 
-    def get(self, _path: str | list[str] | tuple[str], handler: Callable[[HttpRequest, HttpResponse], None]):
+    def get(
+        self,
+        _path: str | list[str] | tuple[str],
+        handler: Callable[[HttpRequest, HttpResponse], None],
+    ):
         self.route(_path, HttpMethod.GET, handler)
 
-    def post(self, _path: str | list[str] | tuple[str], handler: Callable[[HttpRequest, HttpResponse], None]):
+    def post(
+        self,
+        _path: str | list[str] | tuple[str],
+        handler: Callable[[HttpRequest, HttpResponse], None],
+    ):
         self.route(_path, HttpMethod.POST, handler)
 
-    def head(self, _path: str | list[str] | tuple[str], handler: Callable[[HttpRequest, HttpResponse], None]):
+    def head(
+        self,
+        _path: str | list[str] | tuple[str],
+        handler: Callable[[HttpRequest, HttpResponse], None],
+    ):
         self.route(_path, HttpMethod.HEAD, handler)
 
     # Checking the '_route' dictionary to get corresponding handler. That is, checking for path first, then checking
@@ -96,7 +116,7 @@ class HttpServer:
 
     @staticmethod
     def welcome_handler(request: HttpRequest, response: HttpResponse):
-        response.body = '''
+        response.body = """
             <html lang="en-us">
                 <head>
                     <title>Welcome to the Basic Http Engine!</title>
@@ -112,13 +132,13 @@ class HttpServer:
                     </p>
                 </body>
             </html>
-        '''
-        response.headers['Content-Type'] = 'text/html'
+        """
+        response.headers["Content-Type"] = "text/html"
 
     @staticmethod
     def default_handler(request: HttpRequest, response: HttpResponse):
         response.code = HttpStatus.NOT_FOUND
-        response.body = '''
+        response.body = """
             <html lang="en-us">
                 <head>
                     <title>404 Not Found</title>
@@ -131,13 +151,13 @@ class HttpServer:
                     </p>
                 </body>
             </html>
-        '''
-        response.headers['Content-Type'] = 'text/html'
+        """
+        response.headers["Content-Type"] = "text/html"
 
     @staticmethod
     def error_handler(request: HttpRequest, response: HttpResponse):
         response.code = HttpStatus.INTERNAL_SERVER_ERROR
-        response.body = '''
+        response.body = """
             <html lang="en-us">
                 <head>
                     <title>500 Internal Server Error</title>
@@ -153,5 +173,5 @@ class HttpServer:
                     </p>
                 </body>
             </html>
-        '''
-        response.headers['Content-Type'] = 'text/html'
+        """
+        response.headers["Content-Type"] = "text/html"
