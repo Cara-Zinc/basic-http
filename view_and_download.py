@@ -75,3 +75,7 @@ def generate_file_tree_html(directory_path: str) -> str:
 
 def test_path_variable(request: HttpRequest, response: HttpResponse):
     response.body = request.path_variables
+
+
+def test_double_asterisk(request: HttpRequest, response: HttpResponse):
+    response.body = request.path

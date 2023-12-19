@@ -20,4 +20,5 @@ if __name__ == '__main__':
     server.get("/*", view_download_handler)
     server.get("/*/*", view_download_handler)
     server.get("/var/*/{foo}/{bar}", test_path_variable)
+    server.get("/any/**", test_double_asterisk)
     server.listen(args.host, args.port)

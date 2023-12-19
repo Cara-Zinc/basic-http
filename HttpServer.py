@@ -85,6 +85,9 @@ class HttpServer:
 
             routing = routing.setdefault(name, {})
 
+            if name == '**':
+                break
+
         routing = routing.setdefault((), {})
         routing[method] = {
             "handler": handler,
@@ -127,6 +130,9 @@ class HttpServer:
                 routing = routing[name]
             elif '*' in routing:
                 routing = routing['*']
+            elif '**' in routing:
+                routing = routing['**']
+                break
             else:
                 return None
 

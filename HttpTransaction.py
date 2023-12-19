@@ -7,7 +7,7 @@ class HttpTransaction:
         self._version: str = 'HTTP/1.1'
         self._headers: dict = {}
         self._raw_body: bytes = b''
-        self._body = ''
+        self._body: str | bytes | dict | list | tuple = ''
         self._headers['Content-Type'] = 'text/plain'
 
     def __repr__(self):
@@ -22,5 +22,5 @@ class HttpTransaction:
         return self._headers.copy()
 
     @property
-    def body(self):
+    def body(self) -> str | bytes | dict | list | tuple:
         return self._body

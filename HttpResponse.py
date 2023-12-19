@@ -91,14 +91,14 @@ class HttpResponse(HttpTransaction):
         return self._body
 
     @body.setter
-    def body(self, value: str | bytes | dict):
+    def body(self, value: str | bytes | dict | list | tuple):
         if isinstance(value, str):
             self._body = value.encode('utf-8')
             self._headers['Content-Type'] = 'text/plain'
         elif isinstance(value, bytes):
             self._body = value
             self._headers['Content-Type'] = 'application/octet-stream'
-        elif isinstance(value, dict):
+        elif isinstance(value, dict) or isinstance(value, list) or isinstance(value, tuple):
             self._body = json.dumps(value).encode('utf-8')
             self._headers['Content-Type'] = 'application/json'
         else:
