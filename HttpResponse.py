@@ -83,7 +83,6 @@ class HttpResponse(HttpTransaction):
     def __init__(self):
         super().__init__()
         self.code = HttpStatus.OK
-        self._headers['Connection'] = 'keep-alive'
         self._cookies: dict[str, Cookie] = {}
 
     @property
@@ -93,18 +92,19 @@ class HttpResponse(HttpTransaction):
     @body.setter
     def body(self, value: str | bytes | dict | list | tuple):
         if isinstance(value, str):
-            self._body = value.encode('utf-8')
+            self._raw_body = value.encode('utf-8')
             self._headers['Content-Type'] = 'text/plain'
         elif isinstance(value, bytes):
-            self._body = value
+            self._raw_body = value
             self._headers['Content-Type'] = 'application/octet-stream'
         elif isinstance(value, dict) or isinstance(value, list) or isinstance(value, tuple):
-            self._body = json.dumps(value).encode('utf-8')
+            self._raw_body = json.dumps(value).encode('utf-8')
             self._headers['Content-Type'] = 'application/json'
         else:
             raise ValueError(f'Unsupported type {type(value)}')
 
-        self.headers['Content-Length'] = len(self._body)
+        self._body = value
+        self.headers['Content-Length'] = len(self._raw_body)
 
     @property
     def headers(self):
@@ -122,7 +122,7 @@ class HttpResponse(HttpTransaction):
             lines.append(f'Set-Cookie: {cookie!s}'.encode('utf-8'))
 
         lines.append(b'')
-        lines.append(self._body)
+        lines.append(self._raw_body)
 
         sout.write(b'\r\n'.join(lines))
         sout.write(b'\r\n')

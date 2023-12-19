@@ -43,7 +43,8 @@ class HttpServer:
 
                     try:
                         handler(request, response)
-                    except:
+                    except Exception as e:
+                        logging.exception(e)
                         response = HttpResponse()
                         self._error_handler(request, response)
 

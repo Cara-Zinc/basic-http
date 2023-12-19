@@ -76,11 +76,9 @@ class HttpRequest(HttpTransaction):
     def __init__(self):
         super().__init__()
         self._method: HttpMethod = HttpMethod.GET
-        self._path: tuple[str] = tuple()
+        self._path: list[str] = []
         self._parameters: dict[str, str] = {}
         self._cookies: dict[str, str] = {}
-
-        self._headers['Connection'] = 'keep-alive'
 
         self._path_variables: dict[str, str] = {}
         self._path_variables_set: bool = False

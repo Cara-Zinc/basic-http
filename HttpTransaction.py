@@ -9,6 +9,8 @@ class HttpTransaction:
         self._raw_body: bytes = b''
         self._body: str | bytes | dict | list | tuple = ''
         self._headers['Content-Type'] = 'text/plain'
+        self._headers['Content-Length'] = '0'
+        self._headers['Connection'] = 'keep-alive'
 
     def __repr__(self):
         return f'{self._version} with headers {self._headers} and body {self._raw_body}'
