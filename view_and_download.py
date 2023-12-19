@@ -1,16 +1,16 @@
 import mimetypes
 import os
 
-import HttpRequest
-import HttpResponse
+from HttpRequest import HttpRequest
+from HttpResponse import HttpResponse
 from HttpServer import HttpServer
 
 
 def view_download_handler(request: HttpRequest, response: HttpResponse):
-    access_path = "/data" + "/".join(request.path)
+    access_path = "data/" + "/".join(request.path)
     full_path = os.path.normpath(access_path)
     print(access_path, full_path)
-    if os.path.isfile(full_path):
+    if os.path.isfile(access_path):
         # If the requested path is a file, respond with binary file content
         with open(full_path, "rb") as file:
             response.body = file.read()
@@ -18,9 +18,9 @@ def view_download_handler(request: HttpRequest, response: HttpResponse):
         response.headers["Content-Type"] = content_type
         response.headers["Content-Length"] = len(response.body)
 
-    elif os.path.isdir(full_path):
+    elif os.path.isdir(access_path):
         # If the requested path is a directory, respond based on the query parameter SUSTech-HTTP
-        sustech_http = request.headers.get("SUSTech-HTTP", "0")
+        sustech_http = request.parameters.get("SUSTech-HTTP", "0")
 
         if sustech_http == "0":
             # Response with HTML page
