@@ -1,8 +1,6 @@
 import logging
 import socket
 import threading
-import os
-import mimetypes
 from typing import Callable
 
 from HttpRequest import HttpRequest, HttpMethod
@@ -21,7 +19,7 @@ class HttpServer:
     def __handler(self, s: socket.socket, addr: str):
         try:
             with s.makefile("rb", encoding="utf-8") as sin, s.makefile(
-                "wb", encoding="utf-8"
+                    "wb", encoding="utf-8"
             ) as sout:
                 for request in HttpRequest.receive_requests(sin):
                     logging.debug(request)
@@ -56,10 +54,10 @@ class HttpServer:
             self._server_socket.close()
 
     def route(
-        self,
-        _path: str | list[str] | tuple[str],
-        method: HttpMethod,
-        handler: Callable[[HttpRequest, HttpResponse], None],
+            self,
+            _path: str | list[str] | tuple[str],
+            method: HttpMethod,
+            handler: Callable[[HttpRequest, HttpResponse], None],
     ):
         if isinstance(_path, str):
             _path = path(_path)
@@ -70,23 +68,23 @@ class HttpServer:
         route_path[method] = {"handler": handler}
 
     def get(
-        self,
-        _path: str | list[str] | tuple[str],
-        handler: Callable[[HttpRequest, HttpResponse], None],
+            self,
+            _path: str | list[str] | tuple[str],
+            handler: Callable[[HttpRequest, HttpResponse], None],
     ):
         self.route(_path, HttpMethod.GET, handler)
 
     def post(
-        self,
-        _path: str | list[str] | tuple[str],
-        handler: Callable[[HttpRequest, HttpResponse], None],
+            self,
+            _path: str | list[str] | tuple[str],
+            handler: Callable[[HttpRequest, HttpResponse], None],
     ):
         self.route(_path, HttpMethod.POST, handler)
 
     def head(
-        self,
-        _path: str | list[str] | tuple[str],
-        handler: Callable[[HttpRequest, HttpResponse], None],
+            self,
+            _path: str | list[str] | tuple[str],
+            handler: Callable[[HttpRequest, HttpResponse], None],
     ):
         self.route(_path, HttpMethod.HEAD, handler)
 

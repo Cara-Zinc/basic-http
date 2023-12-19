@@ -1,8 +1,9 @@
+import mimetypes
+import os
+
 import HttpRequest
 import HttpResponse
-import mimetypes
-import HttpServer
-import os
+from HttpServer import HttpServer
 
 
 def view_download_handler(request: HttpRequest, response: HttpResponse):
@@ -23,7 +24,7 @@ def view_download_handler(request: HttpRequest, response: HttpResponse):
 
         if sustech_http == "0":
             # Response with HTML page
-            HttpServer.directory_tree_display(request, response, full_path)
+            directory_tree_display(request, response, full_path)
         elif sustech_http == "1":
             # Response with list of files under the requested directory
             file_list = os.listdir(full_path)
@@ -35,10 +36,10 @@ def view_download_handler(request: HttpRequest, response: HttpResponse):
 
 
 def directory_tree_display(
-    request: HttpRequest, response: HttpResponse, full_path: str
+        request: HttpRequest, response: HttpResponse, full_path: str
 ):
     # generate HTML page for directory view with file tree
-    file_tree_html = HttpServer.generate_file_tree_html(full_path)
+    file_tree_html = generate_file_tree_html(full_path)
 
     response.body = f"""
         <html lang="en-us">

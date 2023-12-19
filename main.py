@@ -1,7 +1,7 @@
 import argparse
 import signal
+
 from view_and_download import *
-from HttpServer import HttpServer
 
 
 def parse_arg():
@@ -17,5 +17,5 @@ if __name__ == '__main__':
     print(f'Will be listening on {args.host}:{args.port}')
 
     server = HttpServer()
-    server.get("/",view_download_handler)
+    server.get("/", view_download_handler)
     server.listen(args.host, args.port)
