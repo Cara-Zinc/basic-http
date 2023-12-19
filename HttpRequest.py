@@ -40,7 +40,7 @@ class HttpRequest(HttpTransaction):
                 if param:
                     for p in param.split('&'):
                         key, value = p.split('=') if '=' in p else (p, '')
-                        request._parameter[key] = value
+                        request._parameters[key] = value
 
                 while True:
                     header = sin.readline().decode('utf-8').strip()
@@ -76,11 +76,14 @@ class HttpRequest(HttpTransaction):
     def __init__(self):
         super().__init__()
         self._method: HttpMethod = HttpMethod.GET
-        self._path = tuple()
-        self._parameter = {}
-        self._cookies = {}
+        self._path: tuple[str] = tuple()
+        self._parameters: dict[str, str] = {}
+        self._cookies: dict[str, str] = {}
 
         self._headers['Connection'] = 'keep-alive'
+
+        self._path_variables: dict[str, str] = {}
+        self._path_variables_set: bool = False
 
     @property
     def method(self):
@@ -91,9 +94,21 @@ class HttpRequest(HttpTransaction):
         return self._path
 
     @property
-    def parameter(self):
-        return self._parameter.copy()
+    def parameters(self):
+        return self._parameters.copy()
 
     @property
     def cookies(self):
         return self._cookies.copy()
+
+    @property
+    def path_variables(self):
+        return self._path_variables.copy()
+
+    @path_variables.setter
+    def path_variables(self, value: dict[str, str]):
+        if self._path_variables_set:
+            raise Exception('Path variable has already been set')
+
+        self._path_variables = value
+        self._path_variables_set = True

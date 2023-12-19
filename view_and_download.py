@@ -71,3 +71,7 @@ def generate_file_tree_html(directory_path: str) -> str:
         file_tree_html.append("</ul>")
 
     return "\n".join(file_tree_html)
+
+
+def test_path_variable(request: HttpRequest, response: HttpResponse):
+    response.body = request.path_variables

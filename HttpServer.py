@@ -16,20 +16,31 @@ class HttpServer:
         self._routing: dict = {}
         self.get("/", HttpServer.welcome_handler)
 
+    # noinspection PyTestUnpassedFixture
     def __handler(self, s: socket.socket, addr: str):
         try:
             with s.makefile("rb", encoding="utf-8") as sin, s.makefile(
                     "wb", encoding="utf-8"
             ) as sout:
                 for request in HttpRequest.receive_requests(sin):
-                    logging.debug(request)
+                    logging.info(request)
                     response = HttpResponse()
 
                     if request.headers["Connection"] == "close":
                         response.headers["Connection"] = "close"
 
-                    route = self.get_route(request.path, request.method)
+                    route = self.get_route(request.path, request.method) or {
+                        "handler": self._default_handler,
+                        "path_variables": {},
+                    }
                     handler = route["handler"] if route else self._default_handler
+
+                    path_variables = {}
+                    if "path_variables" in route:
+                        for k, v in route["path_variables"].items():
+                            path_variables[v] = request.path[k]
+                    request.path_variables = path_variables
+
                     try:
                         handler(request, response)
                     except:
@@ -64,8 +75,21 @@ class HttpServer:
         if isinstance(_path, list):
             _path = tuple(_path)
 
-        route_path = self._routing.setdefault(_path, {})
-        route_path[method] = {"handler": handler}
+        routing = self._routing
+        path_variables = {}
+        for i in range(len(_path)):
+            name = _path[i]
+            if name.startswith('{') and name.endswith('}'):
+                path_variables[i] = name[1:-1]
+                name = '*'
+
+            routing = routing.setdefault(name, {})
+
+        routing = routing.setdefault((), {})
+        routing[method] = {
+            "handler": handler,
+            "path_variables": path_variables,
+        }
 
     def get(
             self,
@@ -96,15 +120,23 @@ class HttpServer:
         if isinstance(_path, list):
             _path = tuple(_path)
 
-        if _path not in self._routing:
+        routing = self._routing
+        for i in range(len(_path)):
+            name = _path[i]
+            if name in routing:
+                routing = routing[name]
+            elif '*' in routing:
+                routing = routing['*']
+            else:
+                return None
+
+        if () not in routing:
             return None
+        routing = routing[()]
 
-        route_path = self._routing[_path]
-
-        if method not in route_path:
+        if method not in routing:
             return None
-
-        return route_path[method]
+        return routing[method]
 
     def set_default_handler(self, handler: Callable[[HttpRequest, HttpResponse], None]):
         self._default_handler = handler

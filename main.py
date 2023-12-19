@@ -18,4 +18,5 @@ if __name__ == '__main__':
 
     server = HttpServer()
     server.get("/", view_download_handler)
+    server.get("/var/*/{foo}/{bar}", test_path_variable)
     server.listen(args.host, args.port)
