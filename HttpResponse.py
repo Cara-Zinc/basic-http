@@ -101,6 +101,8 @@ class HttpResponse(HttpTransaction):
         elif isinstance(value, dict):
             self._body = json.dumps(value).encode('utf-8')
             self._headers['Content-Type'] = 'application/json'
+        else:
+            raise ValueError(f'Unsupported type {type(value)}')
 
         self.headers['Content-Length'] = len(self._body)
 
