@@ -1,16 +1,18 @@
 import mimetypes
 import os
 
+import ByteRanges
 from HttpRequest import HttpRequest
 from HttpResponse import HttpResponse, HttpStatus
 from HttpServer import HttpServer
 from authorization import authenticate
 
+
 def view_download_handler(request: HttpRequest, response: HttpResponse):
     if not authenticate(request, response):
         return
     access_path = "data/" + "/".join(request.path)
-    
+
     full_path = os.path.normpath(access_path)
     print(access_path, full_path)
     if ".." in request.path:
@@ -30,7 +32,7 @@ def view_download_handler(request: HttpRequest, response: HttpResponse):
         sustech_http = request.parameters.get("SUSTech-HTTP", "0")
         if sustech_http == "0":
             # Response with HTML page
-            print("access_path: "+access_path)
+            print("access_path: " + access_path)
             directory_tree_display(request, response, access_path)
         elif sustech_http == "1":
             # Response with list of files under the requested directory
@@ -68,7 +70,7 @@ def generate_file_tree_html(directory_path: str) -> str:
     prefix_path = ''
     if not directory_path.endswith('/'):
         index = directory_path.rfind('/')
-        prefix_path = directory_path[index+1:]
+        prefix_path = directory_path[index + 1:]
     for root, dirs, files in os.walk(directory_path):
         relative_path = os.path.relpath(root, directory_path)
         if files:
@@ -79,7 +81,7 @@ def generate_file_tree_html(directory_path: str) -> str:
         if dirs:
             file_tree_html.append(f'<b>directory</b>')
         for dir_name in dirs:
-            dir_path = os.path.join(relative_path,dir_name)
+            dir_path = os.path.join(relative_path, dir_name)
             file_tree_html.append(f'<li><a href="./{prefix_path}{dir_path}">{dir_name}</a></li>')
         break
     return "\n".join(file_tree_html)
@@ -92,3 +94,9 @@ def test_path_variable(request: HttpRequest, response: HttpResponse):
 def test_double_asterisk(request: HttpRequest, response: HttpResponse):
     response.body = request.path
 
+
+def test_range(request: HttpRequest, response: HttpResponse):
+    b = ByteRanges.ByteRanges(1024)
+    b.append('114514\r\n1919810', 0)
+    b.append({'foo': 'bar'}, 1010)
+    response.body = b
