@@ -4,9 +4,11 @@ import os
 from HttpRequest import HttpRequest
 from HttpResponse import HttpResponse, HttpStatus
 from HttpServer import HttpServer
-
+from authorization import authenticate
 
 def view_download_handler(request: HttpRequest, response: HttpResponse):
+    if not authenticate(request, response):
+        return
     access_path = "data/" + "/".join(request.path)
     
     full_path = os.path.normpath(access_path)
