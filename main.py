@@ -17,8 +17,7 @@ if __name__ == '__main__':
     print(f'Will be listening on {args.host}:{args.port}')
 
     server = HttpServer()
-    server.get("/*", view_download_handler)
-    server.get("/*/*", view_download_handler)
-    server.get("/var/*/{foo}/{bar}", test_path_variable)
-    server.get("/any/**", test_double_asterisk)
+    server.get("/**/**", view_download_handler)
+    # server.get("/var/*/{foo}/{bar}", test_path_variable)
+    # server.get("/any/**", test_double_asterisk)
     server.listen(args.host, args.port)
