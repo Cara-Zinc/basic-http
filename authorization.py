@@ -41,6 +41,9 @@ def authenticate(request: HttpRequest, response: HttpResponse):
             </html>
         """
         response.headers["Content-Type"] = "text/html"
-        return False
-
-    return True
+        return False, None
+    
+    else:
+        decoded_qualification = base64.b64decode(encoded_info).decode()
+        username, _ = decoded_qualification.split(":",1)
+    return True, username

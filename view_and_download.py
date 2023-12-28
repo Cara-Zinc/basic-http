@@ -6,10 +6,53 @@ from HttpResponse import HttpResponse, HttpStatus
 from HttpServer import HttpServer
 from authorization import authenticate
 
+
 def view_download_handler(request: HttpRequest, response: HttpResponse):
-    if not authenticate(request, response):
+    autherized, username = authenticate(request, response)
+    if not autherized:
         return
     access_path = "data/" + "/".join(request.path)
+    user_base_path = f"data/{username}/"
+    if request.path[0] != username:
+        response.code = HttpStatus.FORBIDDEN
+        response.body = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Access Denied</title>
+            <style>
+                body {
+                    font-family: 'Arial', sans-serif;
+                    background-color: #f2f2f2;
+                    text-align: center;
+                    padding: 50px;
+                }
+                .container {
+                    background-color: white;
+                    margin: auto;
+                    width: 50%;
+                    border: 3px solid #f1f1f1;
+                    padding: 20px;
+                }
+                h1 {
+                    color: #ff6666;
+                }
+                p {
+                    color: #404040;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Access Denied</h1>
+                <p>Sorry, you do not have permission to access this directory.</p>
+            </div>
+        </body>
+        </html>
+        """
+        response.headers["Content-Type"] = "text/html"
+    return
+
     
     full_path = os.path.normpath(access_path)
     print(access_path, full_path)
@@ -23,14 +66,16 @@ def view_download_handler(request: HttpRequest, response: HttpResponse):
         content_type, encoding = mimetypes.guess_type(full_path)
         response.headers["Content-Type"] = content_type
         response.headers["Content-Length"] = len(response.body)
-        response.headers["Content-Disposition"] = f'attachment; filename="{os.path.basename(full_path)}"'
+        response.headers[
+            "Content-Disposition"
+        ] = f'attachment; filename="{os.path.basename(full_path)}"'
 
     elif os.path.isdir(access_path):
         # If the requested path is a directory, respond based on the query parameter SUSTech-HTTP
         sustech_http = request.parameters.get("SUSTech-HTTP", "0")
         if sustech_http == "0":
             # Response with HTML page
-            print("access_path: "+access_path)
+            print("access_path: " + access_path)
             directory_tree_display(request, response, access_path)
         elif sustech_http == "1":
             # Response with list of files under the requested directory
@@ -43,7 +88,7 @@ def view_download_handler(request: HttpRequest, response: HttpResponse):
 
 
 def directory_tree_display(
-        request: HttpRequest, response: HttpResponse, full_path: str
+    request: HttpRequest, response: HttpResponse, full_path: str
 ):
     # generate HTML page for directory view with file tree
     file_tree_html = generate_file_tree_html(full_path)
@@ -65,22 +110,26 @@ def directory_tree_display(
 def generate_file_tree_html(directory_path: str) -> str:
     # generate HTML file tree for a directory
     file_tree_html = []
-    prefix_path = ''
-    if not directory_path.endswith('/'):
-        index = directory_path.rfind('/')
-        prefix_path = directory_path[index+1:]
+    prefix_path = ""
+    if not directory_path.endswith("/"):
+        index = directory_path.rfind("/")
+        prefix_path = directory_path[index + 1 :]
     for root, dirs, files in os.walk(directory_path):
         relative_path = os.path.relpath(root, directory_path)
         if files:
-            file_tree_html.append(f'<b>file</b>')
+            file_tree_html.append(f"<b>file</b>")
         for file_name in files:
             file_path = os.path.join(relative_path, file_name)
-            file_tree_html.append(f'<li><a href="./{prefix_path}{file_path}">{file_name}</a></li>')
+            file_tree_html.append(
+                f'<li><a href="./{prefix_path}{file_path}">{file_name}</a></li>'
+            )
         if dirs:
-            file_tree_html.append(f'<b>directory</b>')
+            file_tree_html.append(f"<b>directory</b>")
         for dir_name in dirs:
-            dir_path = os.path.join(relative_path,dir_name)
-            file_tree_html.append(f'<li><a href="./{prefix_path}{dir_path}">{dir_name}</a></li>')
+            dir_path = os.path.join(relative_path, dir_name)
+            file_tree_html.append(
+                f'<li><a href="./{prefix_path}{dir_path}">{dir_name}</a></li>'
+            )
         break
     return "\n".join(file_tree_html)
 
@@ -91,4 +140,3 @@ def test_path_variable(request: HttpRequest, response: HttpResponse):
 
 def test_double_asterisk(request: HttpRequest, response: HttpResponse):
     response.body = request.path
-
