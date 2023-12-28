@@ -4,7 +4,27 @@ from datetime import datetime, timezone
 from enum import Enum, unique
 from typing import Literal
 
+import ByteRanges
 from HttpTransaction import HttpTransaction
+
+
+def body(obj) -> tuple[bytes, str]:
+    if isinstance(obj, str):
+        raw = obj.encode('utf-8')
+        body_type = 'text/plain'
+    elif isinstance(obj, bytes):
+        raw = obj
+        body_type = 'application/octet-stream'
+    elif isinstance(obj, dict) or isinstance(obj, list) or isinstance(obj, tuple):
+        raw = json.dumps(obj).encode('utf-8')
+        body_type = 'application/json'
+    elif isinstance(obj, ByteRanges.ByteRanges):
+        raw = obj.to_bytes()
+        body_type = 'multipart/byteranges; boundary=' + obj.boundary
+    else:
+        raise ValueError(f'Unsupported type {type(obj)}')
+
+    return raw, body_type
 
 
 @unique
@@ -91,17 +111,7 @@ class HttpResponse(HttpTransaction):
 
     @body.setter
     def body(self, value: str | bytes | dict | list | tuple):
-        if isinstance(value, str):
-            self._raw_body = value.encode('utf-8')
-            self._headers['Content-Type'] = 'text/plain'
-        elif isinstance(value, bytes):
-            self._raw_body = value
-            self._headers['Content-Type'] = 'application/octet-stream'
-        elif isinstance(value, dict) or isinstance(value, list) or isinstance(value, tuple):
-            self._raw_body = json.dumps(value).encode('utf-8')
-            self._headers['Content-Type'] = 'application/json'
-        else:
-            raise ValueError(f'Unsupported type {type(value)}')
+        self._raw_body, self._headers['Content-Type'] = body(value)
 
         self._body = value
         self.headers['Content-Length'] = len(self._raw_body)
