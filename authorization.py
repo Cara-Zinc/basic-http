@@ -7,6 +7,7 @@ from HttpServer import HttpServer
 
 user_pass_table = {
     "user": "pass",
+    "114514": "114514"
 }
 
 
@@ -21,7 +22,7 @@ def authenticate(request: HttpRequest, response: HttpResponse):
     if auth_header is None or not auth_header.startswith("Basic "):
         response.code = HttpStatus.UNAUTHORIZED
         response.headers["WWW-Authenticate"] = 'Basic realm="Authorization Required"'
-        return False
+        return False, None
 
     encoded_info = auth_header.split(" ")[1]
     if not check_qualification(encoded_info):

@@ -10,11 +10,10 @@ from authorization import authenticate
 
 
 def view_download_handler(request: HttpRequest, response: HttpResponse):
-    autherized, username = authenticate(request, response)
-    if not autherized:
+    authorized, username = authenticate(request, response)
+    if not authorized:
         return
     access_path = "data/" + "/".join(request.path)
-    user_base_path = f"data/{username}/"
     if request.path[0] != username:
         response.code = HttpStatus.FORBIDDEN
         response.body = """
@@ -78,7 +77,6 @@ def view_download_handler(request: HttpRequest, response: HttpResponse):
         if sustech_http == "0":
             # Response with HTML page
             print("access_path: " + access_path)
-            print("access_path: " + access_path)
             directory_tree_display(request, response, access_path)
         elif sustech_http == "1":
             # Response with list of files under the requested directory
@@ -95,6 +93,7 @@ def directory_tree_display(
 ):
     # generate HTML page for directory view with file tree
     file_tree_html = generate_file_tree_html(full_path)
+    upload_form_html = generate_upload_form_html(request.path)
     response.body = f"""
         <html lang="en-us">
             <head>
@@ -103,12 +102,23 @@ def directory_tree_display(
             <body>
                 <h1>Directory View</h1>
                 {file_tree_html}
+                <hr>
+                {upload_form_html}
             </body>
         </html>
         """
     response.headers["Content-Type"] = "text/html"
     response.headers["Content-Length"] = len(response.body)
 
+def generate_upload_form_html(path: list[str]) -> str:
+    # generate HTML form for file upload
+    directory_path = "/".join(path)
+    return f"""
+        <form action="http://localhost:8080/upload?path=/{directory_path}/" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <input type="submit" value="Upload">
+        </form>
+    """
 
 def generate_file_tree_html(directory_path: str) -> str:
     # generate HTML file tree for a directory
@@ -117,29 +127,33 @@ def generate_file_tree_html(directory_path: str) -> str:
     if not directory_path.endswith("/"):
         index = directory_path.rfind("/")
         prefix_path = directory_path[index + 1 :]
-    prefix_path = ''
-    if not directory_path.endswith('/'):
-        index = directory_path.rfind('/')
-        prefix_path = directory_path[index + 1:]
+    print("prefix_path: "+prefix_path)
     for root, dirs, files in os.walk(directory_path):
         relative_path = os.path.relpath(root, directory_path)
         if files:
             file_tree_html.append(f"<b>file</b>")
         for file_name in files:
-            file_path = os.path.join(relative_path, file_name)
+            file_path = os.path.join(relative_path, file_name).removeprefix(".")
+            full_file_path = f'/{prefix_path}{file_path}'
             file_tree_html.append(
-                f'<li><a href="./{prefix_path}{file_path}">{file_name}</a></li>'
+                f'<li><a href="/{prefix_path}{file_path}">{file_name}</a>| {generate_delete_button_html(full_file_path)}</li>'
             )
         if dirs:
             file_tree_html.append(f"<b>directory</b>")
         for dir_name in dirs:
             dir_path = os.path.join(relative_path,  dir_name)
             file_tree_html.append(
-                f'<li><a href="./{prefix_path}{dir_path}">{dir_name}</a></li>'
+                f'<li><a href="/{prefix_path}{dir_path}">{dir_name}</a></li>'
             )
         break
     return "\n".join(file_tree_html)
 
+def generate_delete_button_html(file_path: str) -> str:
+    return f"""
+        <form action="http://localhost:8080/delete?path={file_path}" method="post" style="display: inline;">
+            <input type="submit" value="Delete" onclick="return confirm('Are you sure you want to delete this file?');">
+        </form>
+    """
 
 def test_path_variable(request: HttpRequest, response: HttpResponse):
     response.body = request.path_variables

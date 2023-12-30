@@ -2,8 +2,8 @@ import argparse
 import signal
 
 from view_and_download import *
-
-
+from upload import *
+from delete import *
 def parse_arg():
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', '--inbound', '-i', default='0.0.0.0', help='inbound ip address')
@@ -18,7 +18,9 @@ if __name__ == '__main__':
 
     server = HttpServer()
     server.get("/**/**", view_download_handler)
+    server.post("/upload",upload_handler)
+    server.post("/delete",delete_handler)
     # server.get("/var/*/{foo}/{bar}", test_path_variable)
     # server.get("/any/**", test_double_asterisk)
-    server.get("/range", test_range)
+    # server.get("/range", test_range)
     server.listen(args.host, args.port)
