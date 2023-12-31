@@ -1,7 +1,7 @@
 import argparse
 import signal
 
-from view_and_download import *
+from ViewAndDownload import *
 from upload import *
 from delete import *
 def parse_arg():

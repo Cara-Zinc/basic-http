@@ -7,9 +7,11 @@ from HttpServer import HttpServer
 
 user_pass_table = {
     "user": "pass",
-    "114514": "114514"
+    "114514": "114514",
+    "client1":"123",
+    "client2":"123",
+    "client3":"123",
 }
-
 
 def check_qualification(encoded_qualification):
     decoded_qualification = base64.b64decode(encoded_qualification).decode()
@@ -18,6 +20,7 @@ def check_qualification(encoded_qualification):
 
 
 def authenticate(request: HttpRequest, response: HttpResponse):
+    
     auth_header = request.headers.get("Authorization")
     if auth_header is None or not auth_header.startswith("Basic "):
         response.code = HttpStatus.UNAUTHORIZED

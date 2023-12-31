@@ -11,8 +11,8 @@ def parse_multipart_body(body: bytes, boundary: str):
     # Split the body based on the boundary
     parts = body.split(b'--' + boundary.encode())
     print("how many parts: ")
-    print(len(parts))
-    print(parts)
+    # print(len(parts))
+    # print(parts)
     for part in parts:
         if not b'\r\n\r\n' in part:
             continue
@@ -54,16 +54,16 @@ def upload_handler(request: HttpRequest, response: HttpResponse):
         return
 
     # Construct the user-specific base path and check permission
-    user_base_path = f"/{username}/"
-    if not path_param.startswith(user_base_path):
+    user_base_path = f"{username}/"
+    if not path_param.removeprefix('/').startswith(user_base_path):
         response.code = HttpStatus.FORBIDDEN
         return
 
     # Check if the target directory exists
-    user_base_path = "data"+path_param
+    user_base_path = "data/"+path_param
     target_directory = os.path.join(user_base_path)
     # a test on directory analysis
-    print("target_directory: "+target_directory)
+    # print("target_directory: "+target_directory)
     
 
     if not os.path.exists(target_directory):
@@ -83,12 +83,12 @@ def upload_handler(request: HttpRequest, response: HttpResponse):
     if not boundary:
         response.code = HttpStatus.BAD_REQUEST
         return
-    print("boundary: "+boundary)
+    # print("boundary: "+boundary)
     for filename, file_content in parse_multipart_body(request.body, boundary):
         filename = filename.replace('"','')
         file_path = os.path.join(target_directory, filename)
-        print(file_path)
-        print(filename)
+        # print(file_path)
+        # print(filename)
         try:
             with open(file_path, 'wb') as file:
                 file.write(file_content)

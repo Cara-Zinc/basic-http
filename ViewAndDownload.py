@@ -6,7 +6,7 @@ from HttpRequest import HttpRequest
 from HttpResponse import HttpResponse, HttpStatus
 from HttpServer import HttpServer
 from authorization import authenticate
-
+from ChunkAndRange import *
 
 
 def view_download_handler(request: HttpRequest, response: HttpResponse):
@@ -60,11 +60,23 @@ def view_download_handler(request: HttpRequest, response: HttpResponse):
     if ".." in request.path:
         response.code = HttpStatus.FORBIDDEN
         return
+    
     if os.path.isfile(access_path):
-        # If the requested path is a file, respond with binary file content
-        with open(full_path, "rb") as file:
-            response.body = file.read()
+        range_header = request.headers.get("Range")
+        if range_header:
+            handle_range_request(full_path, range_header, response)
+            return
+        
+        is_chunked = request.parameters.get("chunked") == "1"
+        if is_chunked:
+            response.headers["Transfer-Encoding"] = "chunked"
+            send_chunked_response(full_path, response)
+            
+        else:
+            with open(full_path, "rb") as file:
+                response.body = file.read()
         content_type, encoding = mimetypes.guess_type(full_path)
+        
         response.headers["Content-Type"] = content_type
         response.headers["Content-Length"] = len(response.body)
         response.headers[
