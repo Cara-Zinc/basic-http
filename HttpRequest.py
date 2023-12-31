@@ -61,6 +61,11 @@ class HttpRequest(HttpTransaction):
                 body_type = request._headers.get('Content-Type', 'text/plain')
                 if body_type == 'text/plain':
                     request._body = request._raw_body.decode('utf-8')
+                elif body_type == 'application/x-www-form-urlencoded':
+                    request._body = {}
+                    for p in request._raw_body.decode('utf-8').split('&'):
+                        key, value = p.split('=') if '=' in p else (p, '')
+                        request._body[key] = value
                 elif body_type == 'application/json':
                     request._body = json.loads(request._raw_body.decode('utf-8'))
                 else:

@@ -1,8 +1,9 @@
-import os
 import logging
-from authorization import authenticate
+import os
+
 from HttpRequest import HttpRequest, HttpMethod
-from HttpResponse import HttpResponse,HttpStatus
+from HttpResponse import HttpResponse, HttpStatus
+from authorization import authenticate
 
 
 def delete_handler(request: HttpRequest, response: HttpResponse):
@@ -14,33 +15,38 @@ def delete_handler(request: HttpRequest, response: HttpResponse):
         response.code = HttpStatus.UNAUTHORIZED
         return
 
-    path_param = request.parameters.get('path')
+    path_param = request.parameters.get('path').removeprefix('/')
     if not path_param:
         response.code = HttpStatus.BAD_REQUEST
         return
 
-    user_base_path = f"/{username}"
-    if not path_param.startswith(user_base_path):
+    if not path_param.startswith(username):
         response.code = HttpStatus.FORBIDDEN
-        response.body = f"{user_base_path} is not the same as {path_param}"
+        response.body = f"{username} is not the same as {path_param}"
         return
-    file_path = "data/"+path_param
-    print("file_path: "+file_path)
+    file_path = "data/" + path_param
+    print("file_path: " + file_path)
     # file_path = os.path.normpath(user_base_path + path_param)
     if not os.path.exists(file_path):
         response.code = HttpStatus.NOT_FOUND
         return
 
-    if os.path.isfile(file_path):
-        try:
+    response.code = HttpStatus.OK
+    response.body = "File deleted successfully."
+    try:
+        if os.path.isfile(file_path):
             os.remove(file_path)
-            response.code = HttpStatus.OK
-            response.body = "File deleted successfully."
-            response.headers["Content-Type"] = "text/html"
-        except Exception as e:
-            logging.exception(e)
-            response.code = HttpStatus.INTERNAL_SERVER_ERROR
-    else:
-        response.code = HttpStatus.BAD_REQUEST
-        response.body = "The specified path is not a file."
-        response.headers["Content-Type"] = "text/html"
+        elif os.path.isdir(file_path):
+            if len(os.listdir(file_path)) != 0:
+                response.code = HttpStatus.BAD_REQUEST
+                response.body = "The specified directory is not empty."
+                return
+
+            os.rmdir(file_path)
+        else:
+            response.code = HttpStatus.BAD_REQUEST
+            response.body = "The specified path is not a file or directory."
+    except OSError as e:
+        response.code = HttpStatus.INTERNAL_SERVER_ERROR
+        response.body = "An error occurred while deleting the file."
+        logging.error(e)

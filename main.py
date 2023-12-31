@@ -2,8 +2,10 @@ import argparse
 import signal
 
 from ViewAndDownload import *
-from upload import *
 from delete import *
+from upload import *
+
+
 def parse_arg():
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', '--inbound', '-i', default='0.0.0.0', help='inbound ip address')
@@ -14,12 +16,14 @@ def parse_arg():
 if __name__ == '__main__':
     args = parse_arg()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    print(f'Will be listening on {args.host}:{args.port}')
+    logging.info(f'Will be listening on {args.host}:{args.port}')
 
     server = HttpServer()
-    server.get("/**/**", view_download_handler)
-    server.post("/upload",upload_handler)
-    server.post("/delete",delete_handler)
+    server.get("/", view_download_handler)
+    server.get("/**", view_download_handler)
+    server.post("/upload", upload_handler)
+    server.post("/delete", delete_handler)
+    server.post("/create_folder", create_folder_handler)
     # server.get("/var/*/{foo}/{bar}", test_path_variable)
     # server.get("/any/**", test_double_asterisk)
     # server.get("/range", test_range)

@@ -1,7 +1,7 @@
 import base64
+
 from HttpRequest import HttpRequest
 from HttpResponse import HttpResponse, HttpStatus
-from HttpServer import HttpServer
 
 # TODO: This should be replaced with a proper user management system, adding config files or other implementations
 
@@ -51,3 +51,43 @@ def authenticate(request: HttpRequest, response: HttpResponse):
         decoded_qualification = base64.b64decode(encoded_info).decode()
         username, _ = decoded_qualification.split(":",1)
     return True, username
+
+
+def unauthorize_handler(response):
+    response.code = HttpStatus.FORBIDDEN
+    response.body = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Access Denied</title>
+            <style>
+                body {
+                    font-family: 'Arial', sans-serif;
+                    background-color: #f2f2f2;
+                    text-align: center;
+                    padding: 50px;
+                }
+                .container {
+                    background-color: white;
+                    margin: auto;
+                    width: 50%;
+                    border: 3px solid #f1f1f1;
+                    padding: 20px;
+                }
+                h1 {
+                    color: #ff6666;
+                }
+                p {
+                    color: #404040;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Access Denied</h1>
+                <p>Sorry, you do not have permission to access this directory.</p>
+            </div>
+        </body>
+        </html>
+        """
+    response.headers["Content-Type"] = "text/html"
