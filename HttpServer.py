@@ -195,20 +195,40 @@ class HttpServer:
     def error_handler(request: HttpRequest, response: HttpResponse):
         response.code = HttpStatus.INTERNAL_SERVER_ERROR
         response.body = """
-            <html lang="en-us">
-                <head>
-                    <title>500 Internal Server Error</title>
-                </head>
-                <body>
-                    <h1>500 Internal Server Error</h1>
-                    <hr />
-                    <p>
-                        Sorry, the server encountered an exception while handling your request.
-                    </p>
-                    <p>
-                        If the problem persists, please contact the administrator.
-                    </p>
-                </body>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <title>Error - Internal Server Error</title>
+                <style>
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        background-color: #fff3cd;
+                        color: #856404;
+                        text-align: center;
+                        padding-top: 50px;
+                    }
+                    .container {
+                        background-color: #fff;
+                        margin: auto;
+                        width: 60%;
+                        padding: 40px;
+                        border: 1px solid #856404;
+                        border-radius: 10px;
+                        box-shadow: 0 4px 8px rgba(133, 100, 4, 0.2);
+                    }
+                    h1 {
+                        margin-bottom: 20px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Internal Server Error</h1>
+                    <p>Sorry, something went wrong on our end. Please try again later or contact support if the problem persists.</p>
+                </div>
+            </body>
             </html>
+
         """
         response.headers["Content-Type"] = "text/html"
+

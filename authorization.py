@@ -1,7 +1,9 @@
 import base64
 
+import uuid
 from HttpRequest import HttpRequest
-from HttpResponse import HttpResponse, HttpStatus
+from HttpResponse import Cookie, HttpResponse, HttpStatus
+from HttpServer import HttpServer
 
 # TODO: This should be replaced with a proper user management system, adding config files or other implementations
 
@@ -13,6 +15,8 @@ user_pass_table = {
     "client3":"123",
 }
 
+cookies_dict = dict()
+
 def check_qualification(encoded_qualification):
     decoded_qualification = base64.b64decode(encoded_qualification).decode()
     username, password = decoded_qualification.split(":", 1)
@@ -20,6 +24,11 @@ def check_qualification(encoded_qualification):
 
 
 def authenticate(request: HttpRequest, response: HttpResponse):
+    # check cookie
+    user = request.path[0]
+    if cookies_dict.get(user) and request.cookies.get('session-id'):
+        if cookies_dict.get(user) == request.cookies['session-id']:
+            return True, user
     
     auth_header = request.headers.get("Authorization")
     if auth_header is None or not auth_header.startswith("Basic "):
@@ -50,6 +59,9 @@ def authenticate(request: HttpRequest, response: HttpResponse):
     else:
         decoded_qualification = base64.b64decode(encoded_info).decode()
         username, _ = decoded_qualification.split(":",1)
+        token = uuid.uuid4()
+        cookies_dict[username] = token
+        response.set_cookie(Cookie(username,token))
     return True, username
 
 
