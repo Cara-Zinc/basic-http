@@ -1,9 +1,8 @@
 import base64
-
 import uuid
+
 from HttpRequest import HttpRequest
 from HttpResponse import Cookie, HttpResponse, HttpStatus
-from HttpServer import HttpServer
 
 # TODO: This should be replaced with a proper user management system, adding config files or other implementations
 
@@ -61,7 +60,7 @@ def authenticate(request: HttpRequest, response: HttpResponse):
         username, _ = decoded_qualification.split(":",1)
         token = uuid.uuid4()
         cookies_dict[username] = token
-        response.set_cookie(Cookie(username,token))
+        response.set_cookie(Cookie('session-id', token))
     return True, username
 
 
