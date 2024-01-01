@@ -21,6 +21,8 @@ if __name__ == '__main__':
     server = HttpServer()
     server.get("/", view_download_handler)
     server.get("/**", view_download_handler)
+    server.head("/",head_handler)
+    server.head("/**",head_handler)
     server.post("/upload", upload_handler)
     server.post("/delete", delete_handler)
     server.post("/create_folder", create_folder_handler)

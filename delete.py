@@ -6,7 +6,7 @@ from HttpResponse import HttpResponse, HttpStatus
 from authorization import authenticate
 
 
-def bad_request_handler(request: HttpRequest, response: HttpResponse):
+def bad_request_handler(response: HttpResponse, message):
     response.code = HttpStatus.BAD_REQUEST
     title = "Bad Request"
     message = "The specified path is not a file"
@@ -50,8 +50,7 @@ def bad_request_handler(request: HttpRequest, response: HttpResponse):
     """
     response.headers["Content-Type"] = "text/html"
 
-
-def delete_success_handler(request: HttpRequest, response: HttpResponse):
+def delete_success_handler(response: HttpResponse):
     response.body = """
         <!DOCTYPE html>
         <html lang="en">
@@ -112,24 +111,21 @@ def delete_handler(request: HttpRequest, response: HttpResponse):
     print("file_path: " + file_path)
     # file_path = os.path.normpath(user_base_path + path_param)
     if not os.path.exists(file_path):
-        bad_request_handler(request,response)
+        bad_request_handler(response, "The specified path is not a file or directory.")
         return
 
-    response.code = HttpStatus.OK
-    response.body = "File deleted successfully."
+    delete_success_handler(response)
     try:
         if os.path.isfile(file_path):
             os.remove(file_path)
         elif os.path.isdir(file_path):
             if len(os.listdir(file_path)) != 0:
-                response.code = HttpStatus.BAD_REQUEST
-                response.body = "The specified directory is not empty."
+                bad_request_handler(response, "The specified directory is not empty.")
                 return
 
             os.rmdir(file_path)
         else:
-            response.code = HttpStatus.BAD_REQUEST
-            response.body = "The specified path is not a file or directory."
+            bad_request_handler(response,"The specified path is not a file or directory.")
     except OSError as e:
         response.code = HttpStatus.INTERNAL_SERVER_ERROR
         response.body = "An error occurred while deleting the file."
